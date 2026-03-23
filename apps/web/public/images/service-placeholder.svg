@@ -1,0 +1,13 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#09121E"/>
+  <rect x="106" y="92" width="988" height="616" rx="34" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <path d="M226 524L436 286L574 430L760 240L972 526" stroke="#60A5FA" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="226" cy="524" r="18" fill="#0F6FFF"/>
+  <circle cx="436" cy="286" r="18" fill="#0F6FFF"/>
+  <circle cx="574" cy="430" r="18" fill="#0F6FFF"/>
+  <circle cx="760" cy="240" r="18" fill="#0F6FFF"/>
+  <circle cx="972" cy="526" r="18" fill="#0F6FFF"/>
+  <rect x="224" y="158" width="330" height="20" rx="10" fill="#E2E8F0"/>
+  <rect x="224" y="196" width="456" height="14" rx="7" fill="#94A3B8"/>
+  <text x="224" y="640" fill="#E5E7EB" font-family="Arial" font-size="42" font-weight="700">Service Request</text>
+</svg>

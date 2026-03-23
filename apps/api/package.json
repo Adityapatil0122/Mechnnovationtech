@@ -1,0 +1,21 @@
+{
+  "name": "api",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "build": "node ./scripts/build-check.js",
+    "lint": "echo \"No lint step configured for api\"",
+    "check": "node ./scripts/build-check.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.2",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.25.57"
+  }
+}

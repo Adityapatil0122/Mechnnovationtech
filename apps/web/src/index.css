@@ -1,0 +1,254 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #faf9f7;
+  color: #1a1d20;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #faf9f7 0%, #f5f3ef 100%);
+  color: #1a1d20;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(199, 14, 8, 0.15);
+  color: #1a1d20;
+}
+
+/* ── Panels ── */
+.panel-metal {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.03);
+}
+
+.glow-ring {
+  box-shadow: 0 0 0 1px rgba(199, 14, 8, 0.1), 0 16px 48px rgba(199, 14, 8, 0.1);
+}
+
+/* ── Public shell ── */
+.public-shell {
+  position: relative;
+}
+
+.public-shell .panel-metal,
+.public-shell .ui-panel {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.03);
+}
+
+.public-shell .ui-button {
+  border-radius: 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+.public-shell .ui-button-primary {
+  background: linear-gradient(135deg, #c70e08 0%, #a50b06 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(199, 14, 8, 0.28);
+}
+
+.public-shell .ui-button-primary:hover {
+  box-shadow: 0 6px 20px rgba(199, 14, 8, 0.36);
+}
+
+.public-shell .ui-button-secondary {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  color: #1a1d20;
+}
+
+.public-shell .ui-button-secondary:hover {
+  border-color: rgba(199, 14, 8, 0.35);
+  background: rgba(199, 14, 8, 0.04);
+}
+
+.public-shell .ui-button-ghost {
+  color: #a50b06;
+}
+
+.public-shell .ui-field,
+.public-shell .ui-label {
+  color: #374151;
+}
+
+.public-shell .ui-control {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1d20;
+}
+
+.public-shell .ui-control::placeholder {
+  color: #9ca3af;
+}
+
+.public-shell .ui-control:focus {
+  border-color: rgba(199, 14, 8, 0.45);
+  box-shadow: 0 0 0 3px rgba(199, 14, 8, 0.1);
+}
+
+.public-shell .ui-eyebrow,
+.public-shell .ui-stat-label {
+  color: #a50b06;
+}
+
+.public-shell .ui-section-title,
+.public-shell .ui-stat-value,
+.public-shell .ui-empty-title {
+  color: #1a1d20;
+}
+
+.public-shell .ui-section-description,
+.public-shell .ui-stat-detail,
+.public-shell .ui-empty-body,
+.public-shell .ui-loading-label {
+  color: #6b7280;
+}
+
+.public-shell .ui-loading-spinner {
+  border-color: rgba(0, 0, 0, 0.08);
+  border-top-color: #c70e08;
+}
+
+/* ── Admin shell ── */
+.admin-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fa 0%, #f1f3f5 100%);
+  color: #1a1d20;
+}
+
+.admin-shell .panel-metal,
+.admin-shell .ui-panel {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.03);
+}
+
+.admin-shell .ui-button-primary {
+  background: linear-gradient(135deg, #1a1d20 0%, #111315 100%);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.admin-shell .ui-button-secondary {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  color: #1a1d20;
+}
+
+.admin-shell .ui-button-secondary:hover {
+  background: #f8f9fa;
+}
+
+.admin-shell .ui-field,
+.admin-shell .ui-label {
+  color: #4b5563;
+}
+
+.admin-shell .ui-control {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1d20;
+}
+
+.admin-shell .ui-control::placeholder {
+  color: #9ca3af;
+}
+
+.admin-shell .ui-control:focus {
+  border-color: rgba(26, 29, 32, 0.3);
+  box-shadow: 0 0 0 3px rgba(26, 29, 32, 0.06);
+}
+
+.admin-shell .ui-eyebrow,
+.admin-shell .ui-stat-label {
+  color: #6b7280;
+}
+
+.admin-shell .ui-section-title,
+.admin-shell .ui-stat-value,
+.admin-shell .ui-empty-title {
+  color: #1a1d20;
+}
+
+.admin-shell .ui-section-description,
+.admin-shell .ui-stat-detail,
+.admin-shell .ui-empty-body,
+.admin-shell .ui-loading-label {
+  color: #6b7280;
+}
+
+.admin-shell .ui-loading-spinner {
+  border-color: rgba(0, 0, 0, 0.08);
+  border-top-color: #1a1d20;
+}
+
+/* ── Animations ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.motion-fade-up {
+  opacity: 0;
+  animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--motion-delay, 0ms);
+}
+
+.motion-scale-in {
+  opacity: 0;
+  animation: scale-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--motion-delay, 0ms);
+}
+
+.card-hover {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 16px 40px rgba(0, 0, 0, 0.06);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-fade-up,
+  .motion-scale-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .card-hover {
+    transition: none;
+  }
+}
+
