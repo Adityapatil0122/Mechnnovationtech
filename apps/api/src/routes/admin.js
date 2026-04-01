@@ -239,6 +239,15 @@ router.patch("/site-content/:id", async (req, res, next) => {
   }
 });
 
+router.delete("/site-content/:id", async (req, res, next) => {
+  try {
+    await store.deleteSiteContent(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/testimonials", async (_req, res, next) => {
   try {
     const items = await store.listTestimonials();
@@ -278,3 +287,4 @@ router.delete("/testimonials/:id", async (req, res, next) => {
 });
 
 export default router;
+

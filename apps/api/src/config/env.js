@@ -25,7 +25,13 @@ export const env = {
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
   supabaseStorageBucket: process.env.SUPABASE_STORAGE_BUCKET || "uploads",
-  uploadMaxBytes: parseNumber(process.env.UPLOAD_MAX_BYTES, 20 * 1024 * 1024)
+  uploadMaxBytes: parseNumber(process.env.UPLOAD_MAX_BYTES, 20 * 1024 * 1024),
+  mysqlHost: process.env.MYSQL_HOST || "127.0.0.1",
+  mysqlPort: parseNumber(process.env.MYSQL_PORT, 3306),
+  mysqlUser: process.env.MYSQL_USER || "root",
+  mysqlPassword: process.env.MYSQL_PASSWORD || "",
+  mysqlDatabase: process.env.MYSQL_DATABASE || "mechnnovation",
+  useMySQL: process.env.USE_MYSQL === "true"
 };
 
 export const isSupabaseConfigured =

@@ -3,7 +3,14 @@
     "allow": [
       "Bash(find /c/Mechnnovationtech/apps -type f -not -path */node_modules/* -not -path */dist/*)",
       "Bash(npm run:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(mysql -u root -h 127.0.0.1 -e \"SELECT 1\")",
+      "Bash(node scripts/seed-mysql.js)",
+      "Bash(mysql -u root -h 127.0.0.1 mechnnovation -e \"SELECT COUNT\\(*\\) as products FROM products; SELECT COUNT\\(*\\) as categories FROM categories; SELECT COUNT\\(*\\) as admin_users FROM admin_users;\")",
+      "Bash(npx vite:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where npx:*)",
+      "Bash(where vite:*)"
     ]
   }
 }

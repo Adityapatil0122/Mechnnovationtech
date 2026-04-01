@@ -33,9 +33,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
-        display: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
-        body: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"]
+        sans: ["Inter", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        display: ["Outfit", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        body: ["Inter", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"]
       },
       boxShadow: {
         glow: "0 0 0 1px rgba(199,14,8,0.12), 0 18px 42px rgba(199,14,8,0.18)"

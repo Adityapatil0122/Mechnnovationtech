@@ -32,9 +32,14 @@ import {
   Target,
   Star,
   Quotes,
-  UserCircle
+  UserCircle,
+  WhatsappLogo,
+  Compass,
+  ChatCircle
 } from "@phosphor-icons/react";
 import { apiRequest, companyDetails, uploadFile } from "../lib/api.js";
+import { subscribeCatalogUpdates } from "../lib/catalog-sync.js";
+import { getPageTemplateKeys, resolvePageSections } from "../lib/site-content.js";
 import {
   Button,
   Container,
@@ -42,7 +47,6 @@ import {
   Input,
   LoadingPanel,
   Panel,
-  SectionHeading,
   StatTile,
   TextArea
 } from "../components/ui.jsx";
@@ -54,7 +58,7 @@ const navLinks = [
   { to: "/about", label: "About" }
 ];
 
-/* â”€â”€ Home page data â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Home page data Ã¢â€â‚¬Ã¢â€â‚¬ */
 
 const capabilityCards = [
   {
@@ -79,12 +83,6 @@ const capabilityCards = [
   }
 ];
 
-const homeStats = [
-  { label: "Years of Experience", value: "12+" },
-  { label: "Manufacturing Focus", value: "CNC / VMC" },
-  { label: "Location", value: "Pune, India" },
-  { label: "GST Registered Since", value: "2020" }
-];
 
 const homeMachineHighlights = [
   {
@@ -107,22 +105,16 @@ const homeMachineHighlights = [
   }
 ];
 
-const processSteps = [
-  { step: "01", title: "Share Your Requirement", body: "Upload drawings, specify material, quantity, and timeline." },
-  { step: "02", title: "Feasibility Review", body: "We review machining approach, tooling, and production timeline." },
-  { step: "03", title: "Get a Quote", body: "Receive a practical quote with clear next steps for production." },
-  { step: "04", title: "Production & Delivery", body: "Parts manufactured to spec with quality checks at every stage." }
-];
 
 // Use one stronger shared visual for product pages until dedicated product photography is ready.
 const sharedProductPageImages = [
   "/images/indian_product_shared.png"
 ];
 
-/* â”€â”€ Shared components â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Shared components Ã¢â€â‚¬Ã¢â€â‚¬ */
 
 function FeatureCard({ product }) {
-  const productImage = sharedProductPageImages[0];
+  const productImage = product.primary_image_url || sharedProductPageImages[0];
 
   return (
     <Panel className="group card-hover overflow-hidden motion-fade-up flex flex-col">
@@ -165,7 +157,7 @@ function PublicFooter() {
   ];
 
   return (
-    <footer className="relative mt-20 overflow-hidden bg-gray-950">
+    <footer className="relative overflow-hidden bg-gray-950">
       {/* Subtle background texture */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, #16bfb4 0%, transparent 50%), radial-gradient(circle at 75% 75%, #16bfb4 0%, transparent 50%)" }} />
 
@@ -179,9 +171,9 @@ function PublicFooter() {
           {/* Brand column */}
           <div>
             <div className="flex items-center gap-3">
-              <img src="/images/mlogo-mark.png" alt="Mechnnovation Technologies logo" className="h-11 w-11 rounded-xl object-cover ring-1 ring-white/10" />
+              <img src="/images/mlogo-mark.png" alt="Mechnno Vation Technologies logo" className="h-11 w-11 rounded-xl object-cover ring-1 ring-white/10" />
               <div>
-                <p className="font-display text-xl font-bold text-white">Mechnnovation</p>
+                <p className="font-display text-xl font-bold text-white">Mechnno Vation</p>
                 <p className="text-xs text-electric-400">Technologies</p>
               </div>
             </div>
@@ -253,14 +245,14 @@ function PublicFooter() {
         {/* Bottom bar */}
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-gray-600">
-            Â© {new Date().getFullYear()} Mechnnovation Technologies. All rights reserved.
+            &copy; {new Date().getFullYear()} Mechnno Vation Technologies. All rights reserved.
           </p>
           <p className="text-xs text-gray-600">
             GSTIN: <span className="text-gray-500">{companyDetails.gstin}</span>
-            <span className="mx-2 text-gray-700">Â·</span>
-            Partnership Firm
-            <span className="mx-2 text-gray-700">Â·</span>
-            Narhe, Pune â€” 411041
+            <span className="mx-2 text-gray-700">&bull;</span>
+            Partnership firm
+            <span className="mx-2 text-gray-700">&bull;</span>
+            Narhe, Pune 411041
           </p>
         </div>
       </Container>
@@ -268,7 +260,47 @@ function PublicFooter() {
   );
 }
 
+/* WhatsApp floating button */
+const WA_NUMBER = "919970791081"; // Indian format, no +
+const WA_MESSAGE = encodeURIComponent("Hello! I'm interested in your CNC machining / moulding die services. Please share details.");
+const WA_HREF = `https://wa.me/${WA_NUMBER}?text=${WA_MESSAGE}`;
+
+function WhatsAppButton() {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <a
+      href={WA_HREF}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      aria-label="Chat on WhatsApp"
+      className="wa-float-btn"
+    >
+      {/* Tooltip */}
+      <span
+        className="wa-tooltip"
+        style={{
+          opacity: hovered ? 1 : 0,
+          transform: hovered ? "translateX(0)" : "translateX(8px)",
+        }}
+      >
+        Chat with us
+      </span>
+      {/* Icon */}
+      <WhatsappLogo className="h-[34px] w-[34px] text-white" weight="fill" />
+    </a>
+  );
+}
+
 export function PublicLayout() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const [menuOpen, setListOpen] = useState(false);
   const location = useLocation();
 
@@ -277,15 +309,25 @@ export function PublicLayout() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname]);
 
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   return (
     <div className="public-shell min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-white/80 backdrop-blur-xl">
+      {/* WhatsApp floating button */}
+      <WhatsAppButton />
+
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-md">
         <Container className="flex items-center justify-between py-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src="/images/mlogo-mark.png" alt="Mechnnovation Technologies logo" className="h-9 w-9 rounded-lg object-cover sm:h-10 sm:w-10" />
+            <img src="/images/mlogo-mark.png" alt="Mechnno Vation Technologies logo" className="h-9 w-9 rounded-lg object-cover sm:h-10 sm:w-10" />
             <div>
-              <p className="font-display text-lg font-bold leading-none text-gray-900 sm:text-xl">Mechnnovation</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400">Precision Manufacturing</p>
+              <p className="font-display text-lg font-bold leading-none text-white sm:text-xl">Mechnno Vation</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400">Technologies</p>
             </div>
           </Link>
 
@@ -296,107 +338,182 @@ export function PublicLayout() {
                 to={link.to}
                 end={link.to === "/"}
                 className={({ isActive }) =>
-                  `rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-900"}`
+                  `rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? "bg-white/10 text-white" : "text-gray-300 hover:text-white"}`
                 }
               >
                 {link.label}
               </NavLink>
             ))}
-            <Button to="/contact" className="ml-3">Contact</Button>
+            <Button to="/contact" className="ml-3 bg-white text-gray-900 hover:bg-gray-100">Contact</Button>
           </nav>
 
           <button
             type="button"
             onClick={() => setListOpen((v) => !v)}
-            className="rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 lg:hidden"
+            className="rounded-xl border border-white/10 bg-black/50 p-2 text-gray-300 shadow-sm transition hover:border-white/20 hover:bg-black/70 lg:hidden"
+            aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={menuOpen}
           >
             {menuOpen ? <X className="h-5 w-5" /> : <List className="h-5 w-5" />}
           </button>
         </Container>
+      </header>
 
-        {menuOpen ? (
-          <div className="border-t border-black/5 bg-white lg:hidden">
-            <Container className="grid gap-1 py-3">
+      <div className={`fixed inset-0 z-50 lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
+        <button
+          type="button"
+          aria-label="Close navigation overlay"
+          onClick={() => setListOpen(false)}
+          className={`absolute inset-0 bg-slate-950/28 backdrop-blur-[2px] transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0"}`}
+        />
+
+        <aside className={`absolute inset-y-0 right-0 flex w-full max-w-[320px] flex-col border-l border-black/5 bg-white/95 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.35)] backdrop-blur-xl transition-transform duration-300 ease-out ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
+          <div className="border-b border-black/5 px-5 pb-4 pt-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <img src="/images/mlogo-mark.png" alt="Mechnno Vation Technologies logo" className="h-10 w-10 rounded-xl object-cover" />
+                <div>
+                  <p className="font-display text-base font-bold text-gray-900">Mechnno Vation</p>
+                  <p className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-gray-400">Technologies</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setListOpen(false)}
+                className="rounded-xl border border-black/5 bg-white p-2 text-gray-500 shadow-sm transition hover:border-black/10 hover:text-gray-900"
+                aria-label="Close navigation"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            <nav className="space-y-2">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                  end={link.to === "/"}
+                  onClick={() => setListOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition ${isActive ? "bg-gray-900 text-white shadow-[0_14px_30px_rgba(17,24,39,0.14)]" : "border border-transparent bg-gray-50 text-gray-700 hover:border-black/5 hover:bg-white hover:text-gray-900"}`
+                  }
                 >
-                  {link.label}
+                  <span>{link.label}</span>
+                  <ArrowRight className="h-4 w-4 opacity-60" />
                 </NavLink>
               ))}
-              <Button to="/contact" className="mt-2 w-full">Contact</Button>
-            </Container>
-          </div>
-        ) : null}
-      </header>
+            </nav>
 
-      <main>
+            <div className="mt-6 rounded-2xl border border-black/5 bg-gradient-to-br from-gray-50 to-white p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">Direct Contact</p>
+              <a href={`tel:${companyDetails.phone}`} className="mt-3 flex items-center gap-2.5 text-sm font-medium text-gray-900 transition hover:text-electric-500">
+                <Phone className="h-4 w-4 text-electric-500" weight="fill" /> {companyDetails.phone}
+              </a>
+              <a href={`mailto:${companyDetails.email}`} className="mt-3 flex items-start gap-2.5 text-sm text-gray-600 transition hover:text-electric-500">
+                <Envelope className="mt-0.5 h-4 w-4 shrink-0 text-electric-500" weight="fill" />
+                <span className="break-all">{companyDetails.email}</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="border-t border-black/5 p-4">
+            <Button to="/contact" onClick={() => setListOpen(false)} className="w-full justify-center">
+              Contact Us
+            </Button>
+          </div>
+        </aside>
+      </div>
+
+      <main className={location.pathname === "/" ? "" : "pt-20"}>
         <Outlet />
       </main>
       <PublicFooter />
     </div>
   );
 }
-
-/* â”€â”€ Home Page â”€â”€ */
-
 export function HomePage() {
+  const [content, setContent] = useState(null);
+
+  useEffect(() => {
+    apiRequest("/site-content/home").then(setContent).catch(() => {});
+  }, []);
+
+  const resolvedSections = resolvePageSections("home", content?.sections || []);
+  const knownSectionKeys = new Set(getPageTemplateKeys("home"));
+  const sectionMap = Object.fromEntries(resolvedSections.map((item) => [item.section_key, item]));
+  const heroSection = sectionMap.hero;
+  const processSection = sectionMap.process;
+  const statsSection = sectionMap.stats;
+  const ctaSection = sectionMap.cta;
+  const processSteps = processSection?.meta_json?.steps || [];
+  const homeStats = statsSection?.meta_json?.stats || [];
+  const extraSections = resolvedSections.filter((item) => !knownSectionKeys.has(item.section_key));
+
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden min-h-[85vh] flex items-center">
-        {/* Background image â€” full visibility, no blur */}
-        <div className="absolute inset-0">
-          <img
-            src="/images/indian_cnc_bgworker.png"
-            alt=""
-            className="h-full w-full object-cover scale-[1.02]"
-          />
-        </div>
+      <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-cover bg-center bg-fixed" style={{ backgroundImage: `url(${heroSection?.meta_json?.image_url || "/images/indian_cnc_bgworker.png"})` }}>
+        {/* Background image - full visibility, no blur */}
 
-        {/* Left-to-right fade overlay: near-opaque dark on left â†’ almost transparent on right */}
+
         <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-950/70 to-gray-950/5" />
 
         <Container className="relative py-20 sm:py-28 lg:py-36">
           <div className="motion-fade-up max-w-2xl">
-            <h1 className="font-display text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-              Precision CNC machining<br className="hidden sm:block" /> & <span style={{ color: "#c70e08" }}>industrial tooling</span>
+            {heroSection?.meta_json?.eyebrow && (
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-electric-300">
+                {heroSection.meta_json.eyebrow}
+              </p>
+            )}
+            <h1 className="mt-3 font-display text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+              {heroSection?.title || (
+                <>Precision CNC machining<br className="hidden sm:block" /> & <span style={{ color: "#c70e08" }}>industrial tooling</span></>
+              )}
             </h1>
             <p className="mt-5 max-w-lg text-base leading-7 text-gray-300 sm:text-lg">
-              Moulding dies, CNC turned components, and VMC job work. Fast response, practical communication, reliable execution.
+              {heroSection?.body || "Moulding dies, CNC turned components, and VMC job work. Fast response, practical communication, reliable execution."}
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button to="/contact" className="bg-white text-gray-900 shadow-none hover:bg-gray-100">
-                Contact <ArrowRight className="ml-1.5 h-4 w-4" />
+                {heroSection?.meta_json?.primaryCtaLabel || "Contact"} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
               <Button to="/catalog" variant="ghost" className="text-white/80 hover:text-white">
-                Browse Products <ArrowRight className="ml-1.5 h-4 w-4" />
+                {heroSection?.meta_json?.secondaryCtaLabel || "Browse Products"} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </div>
           </div>
         </Container>
       </section>
-
-      {/* Stats bar */}
+      {/* Stats */}
       <section className="border-b border-black/5 bg-white">
-        <Container className="grid grid-cols-2 divide-x divide-black/5 lg:grid-cols-4">
-          {homeStats.map((stat, i) => (
-            <div key={stat.label} className="motion-fade-up px-5 py-6 text-center" style={{ "--motion-delay": `${i * 80}ms` }}>
-              <p className="font-display text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="mt-1 text-xs text-gray-500">{stat.label}</p>
+        <Container className="pt-0 pb-6 sm:pt-0 sm:pb-8">
+
+          {homeStats.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {homeStats.map((stat, i) => (
+                <div key={`${stat.label}-${stat.value}-${i}`} className="motion-fade-up rounded-2xl border border-black/5 px-5 py-6 text-center" style={{ "--motion-delay": `${i * 80}ms` }}>
+                  <p className="font-display text-2xl font-bold text-gray-900">{stat.value}</p>
+                  {stat.label ? <p className="mt-1 text-xs text-gray-500">{stat.label}</p> : null}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </Container>
       </section>
+
+
 
       {/* Capabilities */}
       <section className="py-16 sm:py-20">
         <Container>
           <div className="motion-fade-up text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">What We Do</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+              <GearSix className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">What We Do</span>
+            </div>
             <h2 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">
               Core capabilities
             </h2>
@@ -412,11 +529,11 @@ export function HomePage() {
                 className="motion-fade-up card-hover rounded-2xl border border-black/5 bg-white p-6"
                 style={{ "--motion-delay": `${100 + i * 80}ms` }}
               >
-                <div className="inline-flex rounded-xl bg-electric-500/8 p-3 text-electric-500">
-                  <card.icon className="h-6 w-6" weight="duotone" />
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-electric-500/8 text-electric-500">
+                  <card.icon className="h-8 w-8" weight="duotone" />
                 </div>
-                <h3 className="mt-4 font-display text-lg font-bold text-gray-900">{card.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-gray-600">{card.body}</p>
+                <h3 className="mt-5 text-center font-display text-lg font-bold text-gray-900">{card.title}</h3>
+                <p className="mt-2 text-center text-sm leading-6 text-gray-600">{card.body}</p>
               </div>
             ))}
           </div>
@@ -427,7 +544,10 @@ export function HomePage() {
       <section className="border-y border-black/5 bg-gray-50 py-16 sm:py-20">
         <Container>
           <div className="motion-fade-up max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Our Machines</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+              <Factory className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Our Machines</span>
+            </div>
             <h2 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">
               Production-ready machining
             </h2>
@@ -447,10 +567,7 @@ export function HomePage() {
                   <img src={item.image} alt={item.title} className="h-52 w-full object-cover transition duration-500 group-hover:scale-105" />
                 </div>
                 <div className="p-5">
-                  <div className="inline-flex rounded-xl bg-electric-500/8 p-2.5 text-electric-500">
-                    <item.icon className="h-5 w-5" weight="duotone" />
-                  </div>
-                  <h3 className="mt-3 font-display text-xl font-bold text-gray-900">{item.title}</h3>
+                  <h3 className="mt-1 font-display text-xl font-bold text-gray-900">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-gray-600">{item.body}</p>
                   <Link to="/contact" className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-electric-500 transition hover:text-electric-600">
                     Send Enquiry <ArrowRight className="h-3.5 w-3.5" />
@@ -466,50 +583,84 @@ export function HomePage() {
       <section className="py-16 sm:py-20">
         <Container>
           <div className="motion-fade-up text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">How It Works</p>
+            {processSection?.meta_json?.eyebrow && (
+              <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+                <Blueprint className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">{processSection.meta_json.eyebrow}</span>
+              </div>
+            )}
             <h2 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">
-              Simple process, reliable results
+              {processSection?.title || "Simple process, reliable results"}
             </h2>
+            {processSection?.body && <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600">{processSection.body}</p>}
           </div>
 
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {processSteps.map((item, i) => (
-              <div key={item.step} className="motion-fade-up relative pl-6" style={{ "--motion-delay": `${100 + i * 80}ms` }}>
-                {i < processSteps.length - 1 && (
-                  <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-electric-500/30 to-transparent" />
-                )}
-                {i === processSteps.length - 1 && (
-                  <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-electric-500/30 to-transparent" />
-                )}
+              <div key={`${item.step}-${item.title}-${i}`} className="motion-fade-up relative pl-6" style={{ "--motion-delay": `${100 + i * 80}ms` }}>
+                <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-electric-500/30 to-transparent" />
                 <span className="font-display text-3xl font-bold text-electric-400/30">{item.step}</span>
                 <h3 className="mt-3 font-display text-base font-bold text-gray-900">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-gray-600">{item.body}</p>
+                {item.body && <p className="mt-2 text-sm leading-6 text-gray-600">{item.body}</p>}
               </div>
             ))}
           </div>
         </Container>
       </section>
 
+      {/* Extra Sections */}
+      {extraSections.length > 0 && (
+        <section className="py-16 sm:py-20 lg:py-24 border-t border-black/5 bg-gray-50/50">
+          <Container className="grid gap-5 lg:grid-cols-2">
+            {extraSections.map((section) => (
+              <Panel key={section.id} className="overflow-hidden p-0 flex flex-col bg-white">
+                {section.meta_json?.image_url && (
+                  <img src={section.meta_json.image_url} alt={section.title || section.section_key} className="h-48 w-full object-cover border-b border-black/5 shrink-0" />
+                )}
+                <div className="p-5 flex-1">
+                  <div className="flex items-center gap-2 text-electric-500">
+                    <Sparkle className="h-3.5 w-3.5" />
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em]">{section.section_key}</span>
+                  </div>
+                  <h2 className="mt-3 font-display text-lg font-bold text-gray-900">{section.title || section.section_key}</h2>
+                  {section.body && <p className="mt-3 text-sm leading-6 text-gray-600">{section.body}</p>}
+                  {Array.isArray(section.meta_json?.list) && (
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                      {section.meta_json.list.map((item) => (
+                        <div key={item} className="flex items-start gap-2.5">
+                          <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-electric-500" weight="fill" /> <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Panel>
+            ))}
+          </Container>
+        </section>
+      )}
+
       {/* CTA */}
       <section className="relative overflow-hidden py-20 sm:py-24">
         <div className="absolute inset-0">
-          <img src="/images/indian_workshop_team.png" alt="" className="h-full w-full object-cover blur-[2px] scale-[1.02]" />
+          <img src={ctaSection?.meta_json?.image_url || "/images/indian_workshop_team.png"} alt="" className="h-full w-full object-cover blur-[2px] scale-[1.02]" />
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-electric-600/20" />
         </div>
         <Container className="relative text-center">
           <div className="motion-fade-up mx-auto max-w-xl rounded-3xl border border-white/15 bg-white/8 px-8 py-10 shadow-2xl backdrop-blur-md sm:px-12">
-            <h2 className="font-display text-3xl font-bold text-white sm:text-4xl drop-shadow-sm">
-              Ready to discuss your project?
+            {ctaSection?.meta_json?.eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.22em] text-electric-200">{ctaSection.meta_json.eyebrow}</p>}
+            <h2 className="mt-3 font-display text-3xl font-bold text-white sm:text-4xl drop-shadow-sm">
+              {ctaSection?.title || "Ready to discuss your project?"}
             </h2>
             <p className="mt-3 text-base text-white/75">
-              Share your drawing or requirement and get a practical quote from our team.
+              {ctaSection?.body || "Share your drawing or requirement and get a practical quote from our team."}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button to="/contact" className="bg-white/90 text-gray-900 shadow-lg shadow-black/10 backdrop-blur-sm hover:bg-white">
-                Submit Enquiry <ArrowRight className="ml-1.5 h-4 w-4" />
+                {ctaSection?.meta_json?.primaryCtaLabel || "Submit Enquiry"} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
               <Button to="/service-request" variant="ghost" className="text-white/90 hover:text-white">
-                Service Request <ArrowRight className="ml-1.5 h-4 w-4" />
+                {ctaSection?.meta_json?.secondaryCtaLabel || "Service Request"} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -519,8 +670,6 @@ export function HomePage() {
   );
 }
 
-/* â”€â”€ Catalog â”€â”€ */
-
 export function CatalogPage() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -529,6 +678,7 @@ export function CatalogPage() {
   const deferredSearch = useDeferredValue(search);
   const [activeCategory, setActiveCategory] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -541,7 +691,7 @@ export function CatalogPage() {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, []);
+  }, [refreshTick]);
 
   useEffect(() => {
     let active = true;
@@ -561,12 +711,21 @@ export function CatalogPage() {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, [deferredSearch, activeCategory]);
+  }, [deferredSearch, activeCategory, refreshTick]);
+
+  useEffect(() => {
+    return subscribeCatalogUpdates(() => {
+      setRefreshTick((tick) => tick + 1);
+    });
+  }, []);
 
   return (
     <Container className="py-16">
       <div className="motion-fade-up">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Products & Services</p>
+        <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+          <StackSimple className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Products & Services</span>
+        </div>
         <h1 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">Product catalog</h1>
         <p className="mt-2 text-base text-gray-600">Browse our catalog and send your requirement for a quote.</p>
       </div>
@@ -621,7 +780,7 @@ export function CatalogPage() {
   );
 }
 
-/* â”€â”€ Product Detail â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Product Detail Ã¢â€â‚¬Ã¢â€â‚¬ */
 
 export function ProductDetailPage() {
   const { slug } = useParams();
@@ -629,10 +788,13 @@ export function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
+  const [showQuoteForm, setShowQuoteForm] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
   const [form, setForm] = useState({ name: "", company: "", phone: "", email: "", quantity: "", message: "", file: null });
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
     apiRequest(`/products/${slug}`)
       .then((data) => { if (active) setPayload(data); })
       .finally(() => { if (active) setLoading(false); });
@@ -643,7 +805,15 @@ export function ProductDetailPage() {
   if (!payload?.product) return <Container className="py-16"><EmptyPanel title="Product not found" body="The product you requested could not be loaded." /></Container>;
 
   const { product, related } = payload;
-  const productImages = sharedProductPageImages;
+  const galleryImages = Array.isArray(product.gallery_urls_json) ? product.gallery_urls_json : [];
+  const productImages = [
+    product.primary_image_url,
+    ...galleryImages
+  ].filter(Boolean);
+  const allImages = productImages.length > 0 ? productImages : sharedProductPageImages;
+  const heroImage = allImages[0];
+  const sideImage = allImages[1] || allImages[0];
+  const specs = Object.entries(product.specs_json || {});
 
   const submit = async (event) => {
     event.preventDefault();
@@ -653,16 +823,7 @@ export function ProductDetailPage() {
       const fileUrl = form.file ? await uploadFile(form.file) : "";
       await apiRequest("/enquiries", {
         method: "POST",
-        body: {
-          product_id: product.id,
-          name: form.name,
-          company: form.company,
-          phone: form.phone,
-          email: form.email,
-          quantity: form.quantity,
-          message: form.message,
-          file_url: fileUrl
-        }
+        body: { product_id: product.id, name: form.name, company: form.company, phone: form.phone, email: form.email, quantity: form.quantity, message: form.message, file_url: fileUrl }
       });
       setSuccess("Requirement submitted successfully. Our team will contact you shortly.");
       setForm({ name: "", company: "", phone: "", email: "", quantity: "", message: "", file: null });
@@ -673,87 +834,191 @@ export function ProductDetailPage() {
     }
   };
 
+  const scrollToQuote = () => { setShowQuoteForm(true); setTimeout(() => document.getElementById("quote-form")?.scrollIntoView({ behavior: "smooth" }), 100); };
+
   return (
-    <Container className="py-16">
-      {/* Breadcrumb */}
-      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
-        <Link to="/catalog" className="hover:text-gray-900">Products</Link>
-        <CaretRight className="h-3.5 w-3.5" />
-        <span className="text-gray-900">{product.name}</span>
-      </div>
-
-      <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <Panel className="overflow-hidden">
-            <img src={productImages[0]} alt={`${product.name} manufacturing preview`} className="h-[400px] w-full object-cover" />
-          </Panel>
-          {productImages.length > 1 && (
-            <div className="mt-4 grid gap-3 grid-cols-3">
-              {productImages.map((image, index) => (
-                <Panel key={`${image}-${index}`} className="overflow-hidden">
-                  <img src={image} alt={`${product.name} preview ${index + 1}`} className="h-28 w-full object-cover" />
-                </Panel>
-              ))}
-            </div>
-          )}
+    <>
+      {/* Hero â€” same style as home: full image, no blur, left-to-right gradient */}
+      <section className="relative overflow-hidden min-h-[55vh] flex items-center">
+        <div className="absolute inset-0">
+          <img src={heroImage} alt="" className="h-full w-full object-cover scale-[1.02]" />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-950/70 to-gray-950/5" />
 
-        <div className="space-y-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">{product.category?.name}</p>
-            <h1 className="mt-2 font-display text-3xl font-bold text-gray-900">{product.name}</h1>
-            <p className="mt-3 text-base leading-7 text-gray-600">{product.description}</p>
+        <Container className="relative z-10 py-16 lg:py-20">
+          {/* Breadcrumb */}
+          <div className="mb-8 flex flex-wrap items-center gap-2 text-sm text-gray-400">
+            <Link to="/catalog" className="hover:text-white transition">Products</Link>
+            <CaretRight className="h-3.5 w-3.5" />
+            <Link to={`/catalog?category=${product.category?.slug || ""}`} className="hover:text-white transition">{product.category?.name || "All"}</Link>
+            <CaretRight className="h-3.5 w-3.5" />
+            <span className="text-gray-300">{product.name}</span>
           </div>
 
-          {Object.keys(product.specs_json || {}).length > 0 && (
-            <Panel className="p-5">
-              <h2 className="font-display text-lg font-bold text-gray-900">Specifications</h2>
-              <div className="mt-4 space-y-2.5">
-                {Object.entries(product.specs_json || {}).map(([label, value]) => (
-                  <div key={label} className="flex items-start justify-between gap-4 border-b border-black/5 pb-2.5 text-sm">
-                    <span className="font-medium text-gray-900">{label}</span>
-                    <span className="text-right text-gray-600">{String(value)}</span>
+          <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="max-w-2xl">
+            <span className="inline-flex rounded-full bg-electric-500/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-electric-400">
+              {product.category?.name || "Industrial Product"}
+            </span>
+            <h1 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">{product.name}</h1>
+            <p className="mt-5 max-w-lg text-base leading-7 text-gray-300 sm:text-lg">{product.short_description}</p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button onClick={scrollToQuote} className="bg-white text-gray-900 shadow-none hover:bg-gray-100 gap-2">
+                Request Quote <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button to="/service-request" variant="ghost" className="text-white/80 hover:text-white gap-2">
+                Send Drawing <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+            </div>
+
+            <Panel className="overflow-hidden border border-white/10 bg-white/5 backdrop-blur sm:mx-auto sm:max-w-md lg:mx-0">
+              <div className="relative">
+                <img src={sideImage} alt={`${product.name} preview`} className="h-64 w-full object-cover sm:h-72 lg:h-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white">
+                  Product Preview
+                </div>
+              </div>
+            </Panel>
+          </div>
+        </Container>
+      </section>
+
+      {/* Product details body */}
+      <Container className="py-14">
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          {/* Left column */}
+          <div className="space-y-8">
+            {/* Full description */}
+            {product.description && product.description !== product.short_description && (
+              <div>
+                <h2 className="flex items-center gap-2.5 font-display text-xl font-bold text-gray-900">
+                  <StackSimple className="h-5 w-5 text-electric-500" weight="fill" /> About This Product
+                </h2>
+                <p className="mt-4 text-base leading-7 text-gray-600">{product.description}</p>
+              </div>
+            )}
+
+            {/* Specifications */}
+            {specs.length > 0 && (
+              <div>
+                <h2 className="flex items-center gap-2.5 font-display text-xl font-bold text-gray-900">
+                  <GearSix className="h-5 w-5 text-electric-500" weight="fill" /> Technical Specifications
+                </h2>
+                <div className="mt-5 rounded-2xl border border-black/5 overflow-hidden">
+                  {specs.map(([label, value], i) => (
+                    <div key={label} className={`flex items-center justify-between gap-4 px-5 py-3.5 text-sm ${i % 2 === 0 ? "bg-gray-50/70" : "bg-white"}`}>
+                      <span className="font-medium text-gray-900">{label}</span>
+                      <span className="text-right text-gray-600 font-medium">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Key features */}
+            <div>
+              <h2 className="flex items-center gap-2.5 font-display text-xl font-bold text-gray-900">
+                <CheckCircle className="h-5 w-5 text-electric-500" weight="fill" /> Why Choose Us
+              </h2>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {[
+                  { icon: ShieldCheck, title: "Quality Assured", desc: "Inspection-backed manufacturing process" },
+                  { icon: Timer, title: "On-Time Delivery", desc: "Planned turnaround with clear timelines" },
+                  { icon: Blueprint, title: "Drawing Support", desc: "2D/3D drawing-based manufacturing" },
+                  { icon: Factory, title: "Production Ready", desc: "Prototype to batch production capability" }
+                ].map((f) => (
+                  <div key={f.title} className="flex items-start gap-3 rounded-xl border border-black/5 bg-white p-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-electric-500/8">
+                      <f.icon className="h-4.5 w-4.5 text-electric-500" weight="fill" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{f.title}</p>
+                      <p className="mt-0.5 text-xs text-gray-500">{f.desc}</p>
+                    </div>
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* Right column â€” sticky sidebar */}
+          <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+            {/* Quote form â€” always visible in sidebar */}
+            <Panel className="p-5 lg:p-6" id="quote-form">
+              <h3 className="font-display text-lg font-bold text-gray-900">Request a Quote</h3>
+              <p className="mt-1 text-sm text-gray-500">Share your requirement and we'll respond within one working day.</p>
+              <form className="mt-5 grid gap-3" onSubmit={submit}>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Input label="Full Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                  <Input label="Company" placeholder="e.g. Mechnno Vation Technologies" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Input label="Phone" placeholder="+91 80 4731 4415" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+                  <Input label="Email" type="email" placeholder="rahul@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+                </div>
+                <Input label="Quantity" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} placeholder="e.g. 50 pieces" />
+                <TextArea label="Requirements" rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Material, tolerances, timeline..." required />
+                <label className="block text-sm text-gray-700">
+                  <span className="mb-1.5 block font-medium">Upload Drawing / File</span>
+                  <input type="file" onChange={(e) => setForm({ ...form, file: e.target.files?.[0] || null })} className="block w-full rounded-xl border border-dashed border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-electric-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white" />
+                  <span className="mt-1 block text-xs text-gray-400">PDF, STEP, DXF, DWG, ZIP, JPG, PNG (max 20 MB)</span>
+                </label>
+                {success && <p className="rounded-lg bg-electric-500/8 px-4 py-2.5 text-sm font-medium text-electric-600">{success}</p>}
+                <Button type="submit" disabled={submitting} className="w-full">{submitting ? "Submitting..." : "Submit Requirement"}</Button>
+              </form>
             </Panel>
-          )}
 
-          <Panel className="p-5">
-            <h2 className="font-display text-lg font-bold text-gray-900">Request This Product</h2>
-            <form className="mt-4 grid gap-3" onSubmit={submit}>
-              <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-              <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
-                <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+            {/* Contact card */}
+            <Panel className="p-5 bg-gray-50">
+              <h3 className="font-display text-base font-bold text-gray-900">Need help choosing?</h3>
+              <p className="mt-2 text-sm text-gray-500">Our team can advise on material, process, and specs.</p>
+              <div className="mt-4 space-y-2.5">
+                <a href={`tel:${companyDetails.phone}`} className="flex items-center gap-2.5 text-sm text-gray-700 hover:text-electric-500 transition">
+                  <Phone className="h-4 w-4 text-electric-500" weight="fill" /> {companyDetails.phone}
+                </a>
+                <a href={`mailto:${companyDetails.email}`} className="flex items-center gap-2.5 text-sm text-gray-700 hover:text-electric-500 transition">
+                  <Envelope className="h-4 w-4 text-electric-500" weight="fill" /> {companyDetails.email}
+                </a>
               </div>
-              <Input label="Quantity" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
-              <TextArea label="Custom Requirements" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} required />
-              <label className="block text-sm text-gray-700">
-                <span className="mb-1.5 block font-medium">Upload Drawing / File</span>
-                <input type="file" onChange={(e) => setForm({ ...form, file: e.target.files?.[0] || null })} className="block w-full rounded-xl border border-dashed border-black/10 bg-gray-50 px-4 py-2.5 text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-electric-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white" />
-              </label>
-              {success ? <p className="text-sm text-electric-500">{success}</p> : null}
-              <Button type="submit" disabled={submitting} className="w-full">{submitting ? "Submitting..." : "Submit Requirement"}</Button>
-            </form>
-          </Panel>
-        </div>
-      </div>
+            </Panel>
 
-      {related.length > 0 && (
-        <div className="mt-16">
-          <h2 className="font-display text-2xl font-bold text-gray-900">Related Products</h2>
-          <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {related.map((item) => <FeatureCard key={item.id} product={item} />)}
+            {/* Trust badges */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {[
+                { icon: ShieldCheck, label: "GST Verified" },
+                { icon: Certificate, label: "12+ Years" },
+                { icon: Factory, label: "Pune, India" }
+              ].map((b) => (
+                <div key={b.label} className="flex flex-col items-center gap-1.5 rounded-xl border border-black/5 bg-white p-3 text-center">
+                  <b.icon className="h-5 w-5 text-electric-500" weight="fill" />
+                  <span className="text-[11px] font-medium text-gray-600">{b.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      )}
-    </Container>
+
+        {/* Related products */}
+        {related.length > 0 && (
+          <div className="mt-16 pt-12 border-t border-black/5">
+            <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="font-display text-2xl font-bold text-gray-900">Related Products</h2>
+              <Button to="/catalog" variant="ghost" className="text-sm gap-1.5">View All <ArrowRight className="h-3.5 w-3.5" /></Button>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {related.map((item) => <FeatureCard key={item.id} product={item} />)}
+            </div>
+          </div>
+        )}
+      </Container>
+    </>
   );
 }
 
-/* â”€â”€ Service Request â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Service Request Ã¢â€â‚¬Ã¢â€â‚¬ */
 
 export function ServiceRequestPage() {
   const [form, setForm] = useState({ name: "", company: "", phone: "", email: "", work_type: "CNC", material: "", quantity: "", deadline: "", notes: "", file: null });
@@ -795,7 +1060,10 @@ export function ServiceRequestPage() {
       <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr]">
         <div className="space-y-6">
           <div className="motion-fade-up">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">On-Demand Machining</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+              <Wrench className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">On-Demand Machining</span>
+            </div>
             <h1 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">Send your drawing</h1>
             <p className="mt-3 text-base text-gray-600">Upload drawings, specify quantity, material, and target date for a practical machining quote.</p>
           </div>
@@ -858,7 +1126,10 @@ export function ServiceRequestPage() {
       {/* Service Testimonials */}
       <div className="mt-20">
         <div className="motion-fade-up text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Client Feedback</p>
+          <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+            <Star className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Client Feedback</span>
+          </div>
           <h2 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">What our clients say</h2>
           <p className="mx-auto mt-3 max-w-lg text-base text-gray-600">
             Businesses across Pune trust us for reliable CNC, VMC, and moulding job work.
@@ -867,7 +1138,7 @@ export function ServiceRequestPage() {
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {[
             {
-              quote: "Quick turnaround on our CNC batch requirement. Mechnnovation team was very practical about feasibility and delivered exactly to our drawing specifications.",
+              quote: "We needed a quick turnaround on a CNC batch, and Mechnno Vation handled it well. The team was clear about feasibility and delivered exactly to our drawing specifications.",
               name: "Amit Joshi",
               company: "Joshi Auto Components, Pimpri",
               avatar: 1
@@ -879,7 +1150,7 @@ export function ServiceRequestPage() {
               avatar: 2
             },
             {
-              quote: "Their moulding die work is top quality. The team clearly knows the trade — they suggested a tooling improvement that actually reduced our production cycle time.",
+              quote: "Their moulding die work is excellent. The team clearly knows the trade, and they suggested a tooling improvement that reduced our production cycle time.",
               name: "Mahesh Bhosale",
               company: "Bhosale Plastics Pvt. Ltd., Pune",
               avatar: 3
@@ -917,7 +1188,7 @@ export function ServiceRequestPage() {
   );
 }
 
-/* â”€â”€ About â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ About Ã¢â€â‚¬Ã¢â€â‚¬ */
 
 export function AboutPage() {
   const [content, setContent] = useState(null);
@@ -926,13 +1197,18 @@ export function AboutPage() {
     apiRequest("/site-content/about").then(setContent).catch(() => {});
   }, []);
 
-  const pageSections = content?.sections || [];
+  const pageSections = resolvePageSections("about", content?.sections || []);
+  const knownSectionKeys = new Set(getPageTemplateKeys("about"));
   const sections = Object.fromEntries(pageSections.map((item) => [item.section_key, item]));
   const storySection = sections.story;
   const capabilitySection = sections.capabilities;
+  const whyChooseSection = sections.why_choose_us;
+  const approachSection = sections.approach;
   const stats = storySection?.meta_json?.stats || [];
   const capabilities = capabilitySection?.meta_json?.list || [];
-  const extraSections = pageSections.filter((item) => !["story", "capabilities"].includes(item.section_key));
+  const whyChooseCards = whyChooseSection?.meta_json?.cards || [];
+  const approachItems = approachSection?.meta_json?.list || [];
+  const extraSections = visibleSections.filter((item) => !knownSectionKeys.has(item.section_key));
   const testimonials = content?.testimonials || [];
 
   return (
@@ -940,24 +1216,35 @@ export function AboutPage() {
       {/* Hero */}
       <div className="grid gap-10 lg:grid-cols-[1fr_0.85fr]">
         <div className="motion-fade-up">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">About Us</p>
-          <h1 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">{storySection?.title || "About Mechnnovation"}</h1>
+          <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+            <Users className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">{storySection?.meta_json?.eyebrow || "About Us"}</span>
+          </div>
+          <h1 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">{storySection?.title || "About Us"}</h1>
           {storySection?.body && <p className="mt-4 text-base leading-7 text-gray-600">{storySection.body}</p>}
           {stats.length > 0 && (
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {stats.map((item) => <StatTile key={item.label} label={item.label} value={item.value} detail={companyDetails.location} />)}
+              {stats.map((item) => (
+                <StatTile
+                  key={`${item.label}-${item.value}`}
+                  label={item.label}
+                  value={item.value}
+                  detail={item.label.toLowerCase().includes("gst") ? companyDetails.gstin : undefined}
+                />
+              ))}
             </div>
           )}
         </div>
         <Panel className="overflow-hidden">
-          <img src="/images/indian_about_hero.png" alt="Workshop team" className="h-full min-h-[360px] w-full object-cover" />
+          <img src={storySection?.meta_json?.image_url || "/images/indian_about_hero.png"} alt="Mechnno Vation workshop team" className="h-full min-h-[360px] w-full object-cover" />
         </Panel>
       </div>
 
       {/* Capabilities + Business */}
       <div className="mt-12 grid gap-5 lg:grid-cols-2">
         <Panel className="p-5">
-          <h2 className="font-display text-lg font-bold text-gray-900">Capabilities</h2>
+          <h2 className="font-display text-lg font-bold text-gray-900">{capabilitySection?.title || "Capabilities"}</h2>
+          {capabilitySection?.body && <p className="mt-2 text-sm leading-6 text-gray-600">{capabilitySection.body}</p>}
           <div className="mt-4 space-y-3 text-sm text-gray-600">
             {capabilities.map((item) => (
               <div key={item} className="flex items-start gap-2.5">
@@ -969,7 +1256,7 @@ export function AboutPage() {
         <Panel className="p-5">
           <h2 className="font-display text-lg font-bold text-gray-900">Business Snapshot</h2>
           <div className="mt-4 space-y-3 text-sm text-gray-600">
-            <p><span className="font-medium text-gray-900">Legal Status:</span> Partnership Firm</p>
+            <p><span className="font-medium text-gray-900">Legal Status:</span> Partnership firm</p>
             <p><span className="font-medium text-gray-900">GST Registered:</span> 14-01-2020</p>
             <p><span className="font-medium text-gray-900">Annual Turnover:</span> 0 - 40 Lakhs</p>
             <p><span className="font-medium text-gray-900">Location:</span> {companyDetails.location}</p>
@@ -981,22 +1268,27 @@ export function AboutPage() {
       {extraSections.length > 0 && (
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           {extraSections.map((section) => (
-            <Panel key={section.id} className="p-5">
-              <div className="flex items-center gap-2 text-electric-500">
-                <Sparkle className="h-3.5 w-3.5" />
-                <span className="text-xs font-semibold uppercase tracking-[0.16em]">{section.page_key}</span>
-              </div>
-              <h2 className="mt-3 font-display text-lg font-bold text-gray-900">{section.title || section.section_key}</h2>
-              {section.body && <p className="mt-3 text-sm leading-6 text-gray-600">{section.body}</p>}
-              {Array.isArray(section.meta_json?.list) && (
-                <div className="mt-4 space-y-2 text-sm text-gray-600">
-                  {section.meta_json.list.map((item) => (
-                    <div key={item} className="flex items-start gap-2.5">
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-electric-500" weight="fill" /> <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
+            <Panel key={section.id} className="overflow-hidden p-0 flex flex-col">
+              {section.meta_json?.image_url && (
+                <img src={section.meta_json.image_url} alt={section.title || section.section_key} className="h-48 w-full object-cover border-b border-black/5 shrink-0" />
               )}
+              <div className="p-5 flex-1">
+                <div className="flex items-center gap-2 text-electric-500">
+                  <Sparkle className="h-3.5 w-3.5" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em]">{section.section_key}</span>
+                </div>
+                <h2 className="mt-3 font-display text-lg font-bold text-gray-900">{section.title || section.section_key}</h2>
+                {section.body && <p className="mt-3 text-sm leading-6 text-gray-600">{section.body}</p>}
+                {Array.isArray(section.meta_json?.list) && (
+                  <div className="mt-4 space-y-2 text-sm text-gray-600">
+                    {section.meta_json.list.map((item) => (
+                      <div key={item} className="flex items-start gap-2.5">
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-electric-500" weight="fill" /> <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </Panel>
           ))}
         </div>
@@ -1005,51 +1297,53 @@ export function AboutPage() {
       {/* Why Work With Us */}
       <div className="mt-16">
         <div className="motion-fade-up text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Why Choose Us</p>
+          <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+            <Trophy className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">{whyChooseSection?.meta_json?.eyebrow || "Why Choose Us"}</span>
+          </div>
           <h2 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">
-            Built on trust & precision
+            {whyChooseSection?.title || "Built on trust & precision"}
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-base text-gray-600">
-            Every part we deliver reflects our commitment to quality, communication, and reliable execution.
-          </p>
+          {whyChooseSection?.body && (
+            <p className="mx-auto mt-3 max-w-xl text-base text-gray-600">
+              {whyChooseSection.body}
+            </p>
+          )}
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { icon: Target, title: "Precision First", body: "Every component machined to spec with strict dimensional accuracy and surface finish control." },
-            { icon: Handshake, title: "Direct Communication", body: "Talk directly with the people who run your job â€” no middlemen, no miscommunication." },
-            { icon: Timer, title: "On-Time Delivery", body: "Production schedules planned around your deadlines with regular status updates." },
-            { icon: Trophy, title: "12+ Years Experience", body: "Proven track record across automotive, industrial, and custom tooling projects." }
-          ].map((item, i) => (
-            <div key={item.title} className="motion-fade-up rounded-2xl border border-black/5 bg-white p-6 text-center" style={{ "--motion-delay": `${100 + i * 80}ms` }}>
-              <div className="mx-auto inline-flex rounded-xl bg-electric-500/8 p-3 text-electric-500">
-                <item.icon className="h-6 w-6" weight="duotone" />
+          {whyChooseCards.map((item, i) => {
+            const Icon = [Target, Handshake, Timer, Trophy][i % 4];
+            return (
+              <div key={`${item.title}-${i}`} className="motion-fade-up rounded-2xl border border-black/5 bg-white p-6 text-center" style={{ "--motion-delay": `${100 + i * 80}ms` }}>
+                <div className="mx-auto inline-flex rounded-xl bg-electric-500/8 p-3 text-electric-500">
+                  <Icon className="h-6 w-6" weight="duotone" />
+                </div>
+                <h3 className="mt-4 font-display text-base font-bold text-gray-900">{item.title}</h3>
+                {item.body && <p className="mt-2 text-sm leading-6 text-gray-600">{item.body}</p>}
               </div>
-              <h3 className="mt-4 font-display text-base font-bold text-gray-900">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-gray-600">{item.body}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
-
       {/* Our Approach */}
       <div className="mt-16">
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="motion-fade-up">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Our Approach</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+              <Compass className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">{approachSection?.meta_json?.eyebrow || "Our Approach"}</span>
+            </div>
             <h2 className="mt-3 font-display text-2xl font-bold text-gray-900 sm:text-3xl">
-              Practical manufacturing, not just promises
+              {approachSection?.title || "Practical manufacturing, not just promises"}
             </h2>
-            <p className="mt-4 text-base leading-7 text-gray-600">
-              We focus on what matters â€” understanding your requirement, reviewing feasibility honestly, and delivering parts that work. No inflated claims, no unnecessary complexity.
-            </p>
+            {approachSection?.body && (
+              <p className="mt-4 text-base leading-7 text-gray-600">
+                {approachSection.body}
+              </p>
+            )}
             <div className="mt-6 space-y-4">
-              {[
-                "Drawing review and feasibility check before quoting",
-                "Transparent communication on timeline and limitations",
-                "Quality checks at every stage of production",
-                "Flexible batch sizes â€” from prototype to repeat orders"
-              ].map((item) => (
+              {approachItems.map((item) => (
                 <div key={item} className="flex items-start gap-3 text-sm text-gray-600">
                   <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-electric-500" weight="fill" />
                   <span>{item}</span>
@@ -1058,29 +1352,28 @@ export function AboutPage() {
             </div>
           </div>
           <Panel className="overflow-hidden">
-            <img src="/images/indian_about_approach.png" alt="CNC operator at work" className="h-full min-h-[320px] w-full object-cover" />
+            <img src={approachSection?.meta_json?.image_url || "/images/indian_about_approach.png"} alt="CNC operator at work" className="h-full min-h-[320px] w-full object-cover" />
           </Panel>
         </div>
       </div>
-
       {/* Testimonials */}
       {(() => {
         const placeholderTestimonials = [
           {
             id: "ph-1",
-            quote: "Mechnnovation delivered our CNC turned components ahead of schedule with excellent dimensional accuracy. Their team is responsive and understands batch production requirements very well.",
+            quote: "Mechnno Vation delivered our CNC turned components ahead of schedule with excellent dimensional accuracy. Their team was responsive and understood our batch production requirements well.",
             name: "Rajesh Kulkarni",
             company: "Kulkarni Engineering Works, Pune"
           },
           {
             id: "ph-2",
-            quote: "We rely on Mechnnovation for our moulding die requirements. Their workshop team is technically sound and the communication throughout the job is very clear and professional.",
+            quote: "We rely on Mechnno Vation for our moulding die requirements. Their workshop team is technically strong, and communication throughout the job was clear and professional.",
             name: "Priya Deshmukh",
             company: "Deshmukh Plastics Pvt. Ltd., Pune"
           },
           {
             id: "ph-3",
-            quote: "Very impressed with the VMC job work quality. They reviewed our drawings carefully and flagged potential issues before production — saved us time and rework costs.",
+            quote: "We were impressed with the VMC job work quality. They reviewed our drawings carefully and flagged potential issues before production, which saved us time and rework costs.",
             name: "Suresh Patil",
             company: "Patil Industries, MIDC Narhe"
           }
@@ -1089,140 +1382,45 @@ export function AboutPage() {
         return (
           <div className="mt-16">
             <div className="motion-fade-up text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Testimonials</p>
-              <h2 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">What customers value</h2>
-              <p className="mx-auto mt-3 max-w-lg text-base text-gray-600">
-                Hear from the businesses and engineers who rely on us for their production needs.
+              <div className="inline-flex items-center gap-2 rounded-full border border-electric-500/15 bg-electric-500/5 px-3.5 py-1.5">
+                <Quotes className="h-3.5 w-3.5 text-electric-500" weight="fill" />
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-electric-500">Client Feedback</span>
+              </div>
+              <h2 className="mt-3 font-display text-3xl font-bold text-gray-900 sm:text-4xl">
+                Trusted by manufacturing teams
+              </h2>
+              <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600">
+                Real feedback from industrial customers who rely on us for tooling, machining, and repeat production support.
               </p>
             </div>
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+
+            <div className="mt-10 grid gap-5 lg:grid-cols-3">
               {displayList.map((item, i) => (
-                <div
-                  key={item.id}
-                  className="motion-fade-up relative flex flex-col rounded-2xl border border-black/5 bg-white p-6"
-                  style={{ "--motion-delay": `${100 + i * 100}ms` }}
-                >
+                <Panel key={item.id} className="motion-fade-up h-full p-6" style={{ "--motion-delay": `${100 + i * 80}ms` }}>
                   <Quotes className="h-8 w-8 text-electric-500/20" weight="fill" />
-                  <p className="mt-3 flex-1 text-base leading-7 text-gray-700">{item.quote}</p>
-                  <div className="mt-6 flex items-center gap-3 border-t border-black/5 pt-4">
-                    <img
-                      src={`/images/indian_avatar_${(i % 3) + 1}.png`}
-                      alt={item.name}
-                      className="h-10 w-10 shrink-0 rounded-full object-cover shadow-sm bg-gray-100"
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
-                    />
+                  <p className="mt-4 text-sm leading-7 text-gray-600">{item.quote}</p>
+                  <div className="mt-6 flex items-center gap-3">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.name} className="h-11 w-11 rounded-full object-cover" />
+                    ) : (
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                        <UserCircle className="h-6 w-6" weight="fill" />
+                      </div>
+                    )}
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{item.name}</p>
                       <p className="text-xs text-gray-500">{item.company}</p>
                     </div>
                   </div>
-                  <div className="mt-3 flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="h-3.5 w-3.5 text-amber-400" weight="fill" />
-                    ))}
-                  </div>
-                </div>
+                </Panel>
               ))}
             </div>
           </div>
         );
       })()}
-
-      {/* Team CTA */}
-      <div className="mt-16">
-        <div className="motion-fade-up relative overflow-hidden rounded-2xl border border-black/5 bg-gray-50 p-8 text-center sm:p-12">
-          {/* Decorative background drawing lines */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.09]">
-            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="blueprint-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c70e08" strokeWidth="1" />
-                  <path d="M 40 20 L 0 20 M 20 40 L 20 0" fill="none" stroke="#c70e08" strokeWidth="0.5" opacity="0.5" />
-                </pattern>
-                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#c70e08" />
-                </marker>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#blueprint-grid)" />
-              
-              {/* Complex mechanical assembly (Top Right) */}
-              <svg x="85%" y="20%" style={{ overflow: "visible" }}>
-                <circle cx="0" cy="0" r="120" fill="none" stroke="#c70e08" strokeWidth="1.5" strokeDasharray="8 4" />
-                <circle cx="0" cy="0" r="90" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <circle cx="0" cy="0" r="30" fill="none" stroke="#c70e08" strokeWidth="2" />
-                <circle cx="0" cy="0" r="10" fill="none" stroke="#c70e08" strokeWidth="1" />
-                {/* Crosshairs */}
-                <line x1="-150" y1="0" x2="150" y2="0" stroke="#c70e08" strokeWidth="0.75" />
-                <line x1="0" y1="-150" x2="0" y2="150" stroke="#c70e08" strokeWidth="0.75" />
-                {/* Little circles on the perimeter */}
-                <circle cx="90" cy="0" r="6" fill="#c70e08" />
-                <circle cx="-90" cy="0" r="6" fill="#c70e08" />
-                <circle cx="0" cy="90" r="6" fill="#c70e08" />
-                <circle cx="0" cy="-90" r="6" fill="#c70e08" />
-                {/* Angle lines */}
-                <line x1="-80" y1="-80" x2="80" y2="80" stroke="#c70e08" strokeWidth="0.5" strokeDasharray="4 4" />
-                <line x1="-80" y1="80" x2="80" y2="-80" stroke="#c70e08" strokeWidth="0.5" strokeDasharray="4 4" />
-                {/* Dimension line */}
-                <line x1="-120" y1="-135" x2="120" y2="-135" stroke="#c70e08" strokeWidth="1" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
-                <text x="0" y="-142" fill="#c70e08" fontSize="12" fontFamily="monospace" textAnchor="middle">Ã˜ 240.0</text>
-              </svg>
-
-              {/* Smaller assembly (Bottom Left) */}
-              <svg x="15%" y="85%" style={{ overflow: "visible" }}>
-                <circle cx="0" cy="0" r="60" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <circle cx="0" cy="0" r="45" fill="none" stroke="#c70e08" strokeWidth="1" strokeDasharray="2 4" />
-                <circle cx="0" cy="0" r="15" fill="none" stroke="#c70e08" strokeWidth="1.5" />
-                {/* Small gears/teeth representation */}
-                <path d="M -5 60 L 5 60 L 3 65 L -3 65 Z M -5 -60 L 5 -60 L 3 -65 L -3 -65 Z M 60 -5 L 60 5 L 65 3 L 65 -3 Z M -60 -5 L -60 5 L -65 3 L -65 -3 Z" fill="#c70e08" />
-                <line x1="-80" y1="0" x2="80" y2="0" stroke="#c70e08" strokeWidth="0.5" />
-                <line x1="0" y1="-80" x2="0" y2="80" stroke="#c70e08" strokeWidth="0.5" />
-                <text x="0" y="25" fill="#c70e08" fontSize="10" fontFamily="monospace" textAnchor="middle">GEAR_A</text>
-              </svg>
-
-              {/* Connecting drafting lines */}
-              <path d="M 15% 85% L 45% 50% L 60% 50% L 85% 20%" fill="none" stroke="#c70e08" strokeWidth="1" strokeDasharray="6 4" />
-              <circle cx="45%" cy="50%" r="4" fill="none" stroke="#c70e08" strokeWidth="1.5" />
-              <circle cx="60%" cy="50%" r="4" fill="none" stroke="#c70e08" strokeWidth="1.5" />
-              
-              {/* Arbitrary chamfer / block drawing (Top Left) */}
-              <svg x="20%" y="20%" style={{ overflow: "visible" }}>
-                <rect x="-40" y="-30" width="80" height="60" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <path d="M -40 -15 L -25 -30" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <path d="M 25 -30 L 40 -15" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <path d="M 40 15 L 25 30" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <path d="M -25 30 L -40 15" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <circle cx="0" cy="0" r="10" fill="none" stroke="#c70e08" strokeWidth="1" />
-                <circle cx="0" cy="0" r="2" fill="#c70e08" />
-                <line x1="-50" y1="0" x2="50" y2="0" stroke="#c70e08" strokeWidth="0.5" strokeDasharray="2 2" />
-                <line x1="0" y1="-40" x2="0" y2="40" stroke="#c70e08" strokeWidth="0.5" strokeDasharray="2 2" />
-              </svg>
-            </svg>
-          </div>
-
-          <div className="relative z-10">
-            <Blueprint className="mx-auto h-12 w-12 text-[#c70e08]/70" weight="duotone" />
-            <h2 className="mt-5 font-display text-2xl font-bold text-gray-900 sm:text-3xl">
-              Ready to work together?
-            </h2>
-            <p className="mx-auto mt-3 max-w-lg text-base text-gray-600">
-              Whether you need a single prototype or a full production run, our team is ready to review your requirement and provide a practical quote.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Button to="/contact">
-                Get in Touch <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Button>
-              <Button to="/service-request" variant="secondary">
-                Submit Drawing
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
     </Container>
   );
 }
-
-/* â”€â”€ Contact â”€â”€ */
 
 export function ContactPage() {
   const [content, setContent] = useState(null);
@@ -1238,6 +1436,12 @@ export function ContactPage() {
   const mainSection = sections.find((item) => item.section_key === "main") || sections[0];
   const extraSections = sections.filter((item) => item.id !== mainSection?.id);
 
+  const contactInfo = {
+    phone: mainSection?.meta_json?.phone || companyDetails.phone,
+    email: mainSection?.meta_json?.email || companyDetails.email,
+    address: mainSection?.meta_json?.address || companyDetails.address,
+    gstin: mainSection?.meta_json?.gstin || companyDetails.gstin,
+  };
   const submit = async (event) => {
     event.preventDefault();
     setSubmitting(true);
@@ -1275,15 +1479,15 @@ export function ContactPage() {
           </div>
 
           <div className="space-y-3 rounded-2xl border border-black/5 bg-white p-5 text-sm text-gray-600">
-            <div className="flex items-center gap-2.5"><Phone className="h-4 w-4 text-electric-500" weight="fill" /> <span>{companyDetails.phone}</span></div>
-            <div className="flex items-center gap-2.5"><Envelope className="h-4 w-4 text-electric-500" weight="fill" /> <span>{companyDetails.email}</span></div>
-            <div className="flex items-start gap-2.5"><MapPin className="mt-0.5 h-4 w-4 text-electric-500" weight="fill" /> <span>{companyDetails.address}</span></div>
-            <div className="flex items-center gap-2.5"><ShieldCheck className="h-4 w-4 text-electric-500" weight="fill" /> <span>GSTIN: {companyDetails.gstin}</span></div>
+            <div className="flex items-center gap-2.5"><Phone className="h-4 w-4 text-electric-500" weight="fill" /> <span>{contactInfo.phone}</span></div>
+            <div className="flex items-center gap-2.5"><Envelope className="h-4 w-4 text-electric-500" weight="fill" /> <span>{contactInfo.email}</span></div>
+            <div className="flex items-start gap-2.5"><MapPin className="mt-0.5 h-4 w-4 text-electric-500" weight="fill" /> <span>{contactInfo.address}</span></div>
+            <div className="flex items-center gap-2.5"><ShieldCheck className="h-4 w-4 text-electric-500" weight="fill" /> <span>GSTIN: {contactInfo.gstin}</span></div>
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-black/5">
             <iframe
-              title="Mechnnovation location"
+              title="Mechnno Vation Technologies location"
               src="https://www.google.com/maps?q=Rajlaxmi%20Industrial%20Estate%20Narhe%20Pune&output=embed"
               className="h-[280px] w-full border-0"
               loading="lazy"
@@ -1295,14 +1499,14 @@ export function ContactPage() {
           <h2 className="font-display text-2xl font-bold text-gray-900">Send an Enquiry</h2>
           <form className="mt-5 grid gap-3" onSubmit={submit}>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              <Input label="Name" placeholder="e.g. Rahul Patil" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
               <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
             </div>
-            <TextArea label="Requirement" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} required />
+            <TextArea label="Requirement" placeholder="Material, tolerances, timeline, drawings or special instructions..." value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="min-h-[220px]" rows={8} required />
             {message ? <p className="text-sm text-electric-500">{message}</p> : null}
             <Button type="submit" disabled={submitting} className="w-full">{submitting ? "Submitting..." : "Submit Enquiry"}</Button>
           </form>
@@ -1335,6 +1539,8 @@ export function ContactPage() {
     </Container>
   );
 }
+
+
 
 
 

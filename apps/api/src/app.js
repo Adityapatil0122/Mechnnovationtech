@@ -12,7 +12,7 @@ export const createApp = () => {
 
   app.use(
     cors({
-      origin: [env.frontendUrl, "http://localhost:5173"],
+      origin: true,
       credentials: false
     })
   );

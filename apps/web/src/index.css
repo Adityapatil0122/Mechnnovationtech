@@ -1,16 +1,19 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: light;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background: #faf9f7;
   color: #1a1d20;
 }
 
 html {
   scroll-behavior: smooth;
+  font-size: 110%; /* +10% overall site scale */
 }
 
 body {
@@ -31,7 +34,7 @@ body {
   color: #1a1d20;
 }
 
-/* ── Panels ── */
+/* â”€â”€ Panels â”€â”€ */
 .panel-metal {
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -42,7 +45,7 @@ body {
   box-shadow: 0 0 0 1px rgba(199, 14, 8, 0.1), 0 16px 48px rgba(199, 14, 8, 0.1);
 }
 
-/* ── Public shell ── */
+/* â”€â”€ Public shell â”€â”€ */
 .public-shell {
   position: relative;
 }
@@ -127,7 +130,7 @@ body {
   border-top-color: #c70e08;
 }
 
-/* ── Admin shell ── */
+/* â”€â”€ Admin shell â”€â”€ */
 .admin-shell {
   min-height: 100vh;
   background: linear-gradient(180deg, #f8f9fa 0%, #f1f3f5 100%);
@@ -200,7 +203,7 @@ body {
   border-top-color: #1a1d20;
 }
 
-/* ── Animations ── */
+/* â”€â”€ Animations â”€â”€ */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -250,5 +253,90 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .card-hover {
     transition: none;
   }
+}
+
+/* â”€â”€ Consistent sub-text & title sizes (non-hero) â”€â”€ */
+/* Eyebrow labels (uppercase tiny labels above titles) */
+.ui-eyebrow,
+.public-shell .ui-eyebrow,
+.admin-shell .ui-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+}
+
+/* Section/panel titles - consistent across both shells */
+.public-shell .ui-section-title {
+  font-size: 1.875rem; /* ~30px at 110% base = 33px */
+}
+
+/* Body / description text - uniform across all sections */
+.public-shell .ui-section-description {
+  font-size: 0.9375rem; /* ~15px */
+  line-height: 1.7;
+}
+
+/* Stat labels and values */
+.public-shell .ui-stat-label,
+.admin-shell .ui-stat-label {
+  font-size: 0.72rem;
+}
+
+.public-shell .ui-stat-value,
+.admin-shell .ui-stat-value {
+  font-size: 1.5rem;
+}
+
+/* Admin panel/page headers */
+.admin-shell .ui-section-title {
+  font-size: 1.25rem;
+}
+
+/* â”€â”€ WhatsApp Floating Button â”€â”€ */
+.wa-float-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background-color: #25D366;
+  border-radius: 50px;
+  text-align: center;
+  font-size: 30px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(37, 211, 102, 0.5);
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  animation: wa-pulse 2s infinite;
+}
+
+.wa-float-btn:hover {
+  transform: scale(1.08);
+  background-color: #1EBE5D;
+  animation: none;
+}
+
+.wa-tooltip {
+  position: absolute;
+  right: 72px; /* to left of button */
+  background: white;
+  color: #1a1a1a;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border-bottom-right-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform-origin: right top;
+}
+
+@keyframes wa-pulse {
+  0% { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(37, 211, 102, 0.4); }
+  70% { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 16px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(37, 211, 102, 0); }
 }
 

@@ -20,10 +20,10 @@ export const companyProfile = {
     "VMC Machine Job Work",
     "CNC Turned Components"
   ],
-  location: "Narhe, Pune - 411041, Maharashtra",
+  location: "Narhe, Pune 411041, Maharashtra",
   address: [
-    "Shop No.5, Sr.No.38/1, Rajlaxmi Industrial Estate,",
-    "Near Khudekar Industrial Estate, Narhe, Pune-411041"
+    "Shop No. 5, Sr. No. 38/1, Rajlaxmi Industrial Estate,",
+    "Near Khudekar Industrial Estate, Narhe, Pune 411041"
   ].join(" "),
   email: "mechnnovationtechnologies@gmail.com",
   phone: "08047314415 Ext 9922",
@@ -401,8 +401,8 @@ export const siteContent = [
     id: "content-about-story",
     page_key: "about",
     section_key: "story",
-    title: "12+ years of tooling and machining work.",
-    body: "Mechnnovation Technologies is a Pune-based partnership firm for moulding dies, CNC components, and VMC job work.",
+    title: "12+ years of tooling and machining expertise.",
+    body: "Mechnnovation Technologies is a Pune-based partnership firm specializing in moulding dies, CNC components, and VMC job work.",
     meta_json: {
       stats: [
         { label: "Years", value: "12+" },
@@ -433,8 +433,8 @@ export const siteContent = [
     id: "content-contact-main",
     page_key: "contact",
     section_key: "main",
-    title: "Contact Mechnnovation",
-    body: "Share your requirement and we will reply with the next step.",
+    title: "Contact Us",
+    body: "Share your requirement, and our team will get back to you with the next step.",
     meta_json: {
       mapQuery: "Narhe Pune Rajlaxmi Industrial Estate"
     },

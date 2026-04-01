@@ -306,6 +306,11 @@ class MemoryStore {
     return clone(next);
   }
 
+  async deleteSiteContent(id) {
+    this.siteContent = this.siteContent.filter((item) => item.id !== id);
+    return true;
+  }
+
   async listTestimonials() {
     return clone(this.testimonials.sort((a, b) => a.sort_order - b.sort_order));
   }
@@ -734,6 +739,19 @@ class SupabaseStore {
     return data;
   }
 
+  async deleteSiteContent(id) {
+    const { error } = await this.client
+      .from("site_content")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  }
+
   async listTestimonials() {
     const { data, error } = await this.client
       .from("testimonials")
@@ -828,6 +846,16 @@ class SupabaseStore {
   }
 }
 
-export const store = isSupabaseConfigured ? new SupabaseStore() : new MemoryStore();
-export const storeMode = isSupabaseConfigured ? "supabase" : "memory";
+import { MysqlStore } from "./mysql-store.js";
+
+function createStore() {
+  if (env.useMySQL) return { store: new MysqlStore(), mode: "mysql" };
+  if (isSupabaseConfigured) return { store: new SupabaseStore(), mode: "supabase" };
+  return { store: new MemoryStore(), mode: "memory" };
+}
+
+const { store: _store, mode: _mode } = createStore();
+export const store = _store;
+export const storeMode = _mode;
 export { leadStatuses };
+

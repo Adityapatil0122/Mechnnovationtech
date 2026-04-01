@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { clsx } from "clsx";
 
@@ -94,9 +95,9 @@ export function TextArea({ label, error, className = "", ...props }) {
   );
 }
 
-export function Panel({ className = "", children }) {
-  return <div className={clsx("ui-panel panel-metal rounded-2xl", className)}>{children}</div>;
-}
+export const Panel = forwardRef(function Panel({ className = "", children }, ref) {
+  return <div ref={ref} className={clsx("ui-panel panel-metal rounded-2xl", className)}>{children}</div>;
+});
 
 export function StatTile({ label, value, detail }) {
   return (

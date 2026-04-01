@@ -7,7 +7,8 @@
     "dev": "node --watch src/server.js",
     "build": "node ./scripts/build-check.js",
     "lint": "echo \"No lint step configured for api\"",
-    "check": "node ./scripts/build-check.js"
+    "check": "node ./scripts/build-check.js",
+    "seed": "node ./scripts/seed-mysql.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.2",
@@ -16,6 +17,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.20.0",
     "zod": "^3.25.57"
   }
 }
